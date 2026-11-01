@@ -1,0 +1,20 @@
+<!-- Session 8: Our priorities. Paste into ONE Webflow Code Embed on houseofthepeople.uk/session8,
+     inside a full-width section (not a Container). Links such as /session8#vote or /session8#room open that tab. -->
+<div id="hotp-s8-wrap" style="width:100%;margin:0;padding:0">
+  <iframe id="hotp-s8"
+    title="Session 8: Our priorities"
+    data-src="https://yazash123.github.io/session8/"
+    allow="clipboard-write; fullscreen"
+    style="display:block;width:100%;height:100vh;height:100dvh;border:0;background:#14243C"></iframe>
+</div>
+<script>
+(function(){
+  var f=document.getElementById('hotp-s8'), base=f.getAttribute('data-src');
+  // Pass a tab link (#setup, #room, #together, #vote, #vote-results ...) from the Webflow address to the page.
+  function pass(){
+    var h=/^#[a-z][a-z0-9-]{0,30}$/i.test(location.hash)?location.hash:'';
+    if(f.getAttribute('src')!==base+h) f.setAttribute('src',base+h);
+  }
+  pass(); window.addEventListener('hashchange',pass);
+})();
+</script>

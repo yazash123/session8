@@ -1,0 +1,100 @@
+rules_version = '2';
+// Firebase project "session-5-activity", from Session 8 (3 Nov) onwards.
+// Paste the whole file into Firebase console → Firestore Database → Rules → Publish.
+//
+// Only Session 8's collections (s8-...) are open. Sessions 5–7 (subs, ice-s6, ice-s7, drv-s6, drv-s7,
+// miss-s6, miss-s7, poll-s6) are now closed to the public: their data stays in the database and in the
+// console, but the old pages can no longer read or change it.
+//
+// Members don't sign in, so their writes are checked for shape, size and timing.
+// The host signs in (Firebase Authentication → Email/Password, user host@houseofthepeople.uk) and only the
+// host can change the session's settings, hide added items, or clear votes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isHost() {
+      return request.auth != null
+        && request.auth.token.email == 'host@houseofthepeople.uk'
+        && request.auth.token.firebase.sign_in_provider == 'password';
+    }
+    function shortStr(v, max) { return v is string && v.size() <= max; }
+    function nowMs() { return request.time.toMillis(); }
+    // a time from the member's own clock, within a day of Google's (clocks are often a few minutes out)
+    function recent(t) { return t is int && t > nowMs() - 86400000 && t < nowMs() + 86400000; }
+    // members can only list everyone's votes and picks once the host shows the results
+    function resultsShown() {
+      return get(/databases/$(database)/documents/s8-config/main).data.get('showResults', false) == true;
+    }
+
+    // The host's settings: which vote is open, timers, whether results show. One document.
+    match /s8-config/{id} {
+      allow read: if true;
+      allow write: if isHost() && id == 'main'
+        && request.resource.data.keys().hasOnly(['set', 'phase', 'endsAt', 'addOpen', 'pickPhase',
+             'pickEnds', 'showResults', 'stamp', 'paper']);
+    }
+
+    // One document per pairwise choice. Never edited. A member can take back a choice for 15 minutes
+    // ("Undo my last choice"); after that only the host can clear it.
+    match /s8-votes/{id} {
+      allow get: if true;
+      allow list: if isHost() || resultsShown();
+      allow create: if id.size() <= 40
+        && request.resource.data.keys().hasOnly(['set', 'a', 'b', 'w', 'r', 'by', 'name', 'room', 'at'])
+        && request.resource.data.keys().hasAll(['set', 'a', 'b', 'w', 'by', 'name', 'room', 'at'])
+        && request.resource.data['set'] in ['drivers', 'risks']
+        && shortStr(request.resource.data.a, 40) && shortStr(request.resource.data.b, 40)
+        && request.resource.data.a != request.resource.data.b
+        && (request.resource.data.w == null
+            || request.resource.data.w == request.resource.data.a
+            || request.resource.data.w == request.resource.data.b)
+        && (!('r' in request.resource.data) || shortStr(request.resource.data.r, 60))
+        && shortStr(request.resource.data.by, 40) && request.resource.data.by.size() >= 1
+        && shortStr(request.resource.data.name, 60)
+        && request.resource.data.room is int && request.resource.data.room >= 0 && request.resource.data.room <= 30
+        && recent(request.resource.data.at);
+      allow update: if false;
+      allow delete: if isHost() || resource.data.at > nowMs() - 900000;
+    }
+
+    // Each member's five risks. The document id is the member's browser id; sending again replaces it.
+    match /s8-picks/{pid} {
+      allow get: if true;
+      allow list: if isHost() || resultsShown();
+      allow create, update: if pid.size() >= 2 && pid.size() <= 40
+        && request.resource.data.keys().hasOnly(['ids', 'name', 'room', 'at'])
+        && request.resource.data.keys().hasAll(['ids', 'at'])
+        && request.resource.data.ids is list && request.resource.data.ids.size() <= 5
+        && request.resource.data.ids.hasOnly(['N01', 'N02', 'N03', 'N04', 'N05', 'N06', 'N07', 'N08', 'N09', 'N10', 'N11', 'N12', 'N13', 'N14', 'R01', 'R02', 'R03', 'R05', 'R06', 'R07', 'R08', 'R09', 'R10', 'R11', 'R12', 'R14', 'R15'])
+        && (!('name' in request.resource.data) || shortStr(request.resource.data.name, 60))
+        && (!('room' in request.resource.data) || (request.resource.data.room is int
+             && request.resource.data.room >= 0 && request.resource.data.room <= 30))
+        && recent(request.resource.data.at);
+      allow delete: if isHost();
+    }
+
+    // Drivers members add during the vote. Anyone can add; only the host can hide, show or remove one.
+    match /s8-ideas/{id} {
+      allow read: if true;
+      allow create: if id.size() <= 40
+        && request.resource.data.keys().hasOnly(['id', 'set', 't', 's', 'by', 'at', 'hidden'])
+        && request.resource.data.keys().hasAll(['id', 'set', 't', 's', 'by', 'at', 'hidden'])
+        && request.resource.data.id == id
+        && request.resource.data['set'] in ['drivers', 'risks']
+        && shortStr(request.resource.data.t, 120) && request.resource.data.t.size() >= 1
+        && shortStr(request.resource.data.s, 240)
+        && shortStr(request.resource.data.by, 40)
+        && recent(request.resource.data.at)
+        && request.resource.data.hidden == false;
+      allow update: if isHost()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hidden'])
+        && request.resource.data.hidden is bool;
+      allow delete: if isHost();
+    }
+
+    // Everything else, including Sessions 5–7, is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
