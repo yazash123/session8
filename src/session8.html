@@ -2806,7 +2806,7 @@ VIEW.together=(function(){
 VIEW.vote=(function(){
   var el=$('#v-vote'), tab='drivers', mv=null, HOST=false;
   try{HOST=!window.S8HOST&&sessionStorage.getItem('s8-host')==='1';}catch(e){}
-  if(window.S8HOST)window.S8HOST.watch(function(on){HOST=!!on;if(typeof renderHost==='function')renderHost();});
+  if(window.S8HOST)window.S8HOST.watch(function(on){HOST=!!on;if(typeof restartL==='function')restartL();if(typeof renderHost==='function')renderHost();});
   var SETS={drivers:{n:'Drivers',q:'Which driver should the House spend its time on first?'},risks:{n:'Risks',q:'Which risk should the House spend its time on first?'}};
   var REASONS=['They matter equally','I don’t know enough','Neither matters to me','They overlap too much'];
   var ITEMS={drivers:DRV.map(function(d){return {id:d.id};}),risks:RORDER.map(function(id){return {id:id,g:RISKS[id].g,n:isNew(id)};})};
@@ -2844,12 +2844,13 @@ VIEW.vote=(function(){
   function addIdea(t,s){var it={id:'M'+rid(),set:S.cfg.set,t:t,s:s||'',by:S.me,at:Date.now(),hidden:false};
     if(S.live)S.db.doc('ideas/'+it.id).set(it).catch(function(){});else{S.ideas.push(it);renderAll();}}
   function setHidden(id,h){if(S.live)S.db.doc('ideas/'+id).update({hidden:h}).catch(function(){});else{S.ideas.forEach(function(x){if(x.id===id)x.hidden=h;});renderAll();}}
+  var clearArmed=0;
   function resetSet(){var set='drivers';
     if(S.live){S.votes.filter(function(v){return v.set===set;}).forEach(function(v){if(v._id)S.db.doc('votes/'+v._id).delete().catch(function(){});});
       S.ideas.filter(function(x){return x.set===set;}).forEach(function(x){S.db.doc('ideas/'+x.id).delete().catch(function(){});});}
     else{S.votes=S.votes.filter(function(v){return v.set!==set;});S.ideas=S.ideas.filter(function(x){return x.set!==set;});}
     {if(S.live)Object.keys(PICKS).forEach(function(k){S.db.doc('picks/'+k).delete().catch(function(){});});else PICKS={};myPick=[];pickSaved=false;}
-    saveCfg({phase:'idle',endsAt:0,paper:null});}
+    saveCfg({phase:'idle',endsAt:0,paper:null,showResults:false,pickPhase:'idle',pickEnds:0,snap:null,resetAt:Date.now()});}
 
   function pool(){var base=ITEMS[S.cfg.set].map(function(x){return Object.assign({},x);});
     S.ideas.forEach(function(x){if(x.set===S.cfg.set&&!x.hidden)base.push({id:x.id,t:x.t,s:x.s,own:true});});return base;}
@@ -2861,18 +2862,20 @@ VIEW.vote=(function(){
     w=w.map(function(x){return Math.min(x/c1,.05);});var c2=w.reduce(function(s,x){return s+x;},0),r=Math.random()*c2,q=0;
     for(;q<w.length;q++){r-=w[q];if(r<=0)break;}
     var pr=pairs[Math.min(q,pairs.length-1)],A=pr[0],B=pr[1];if(Math.random()<.5){var tt=A;A=B;B=tt;}S.pair=[A,B];S.last=pr[2];}
-  function remaining(){return Math.max(0,S.cfg.endsAt-Date.now());}
+  /* timers follow the host's clock: OFF is the gap to it, measured when a host change arrives live */
+  var OFF=0,cfgSeen=false; function now(){return Date.now()+OFF;}
+  function remaining(){return Math.max(0,S.cfg.endsAt-now());}
   function phaseNow(){if(S.cfg.phase==='add')return 'idle';if(S.cfg.phase==='vote'&&remaining()<=0)return 'closed';return S.cfg.phase;}
-  function pickOpen(){return S.cfg.pickPhase==='open'&&S.cfg.pickEnds>Date.now();}
+  function pickOpen(){return S.cfg.pickPhase==='open'&&S.cfg.pickEnds>now();}
   function fmt(ms){var s=Math.ceil(ms/1000),m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
   var lastPhase='',lastPick=null;
   function tick(){
     var ph=phaseNow(),c=$('#v-clock'),t=$('#v-clockt');
     if(ph==='add'||ph==='vote'){c.className='clock';t.textContent=(ph==='add'?'Adding · ':'Voting · ')+fmt(remaining())+' left';}
-    else if(pickOpen()){c.className='clock';t.textContent='Pick five · '+fmt(S.cfg.pickEnds-Date.now())+' left';}
+    else if(pickOpen()){c.className='clock';t.textContent='Pick five · '+fmt(S.cfg.pickEnds-now())+' left';}
     else{c.className='clock off';t.textContent=ph==='closed'?'Closed':'Not open yet';}
     if(ph!==lastPhase){lastPhase=ph;renderVote();renderHost();}
-    var po=pickOpen();if(po!==lastPick){lastPick=po;renderPick();renderHost();}
+    var po=pickOpen();if(po!==lastPick){lastPick=po;renderPick();renderHost();if(DRAWER.id&&DRAWER.pick){var pb=$('#drawer .pickbar');if(pb)pb.innerHTML=pickBar(DRAWER.id);var pc=$('#drawer .pkcw');if(pc)pc.innerHTML=pickCircle(DRAWER.id);}}
   }
   setInterval(tick,500);
 
@@ -2976,6 +2979,11 @@ VIEW.vote=(function(){
   function paperRows(T0){var pp=S.cfg.paper;if(!pp||!pp.rows)return null;var by={};T0.P.forEach(function(x){by[x.id]=x;});
     var r=pp.rows.filter(function(q){return by[q.id];}).map(function(q){return {x:by[q.id],score:q.score,lo:q.lo,hi:q.hi,seen:q.seen};});return r.length?r:null;}
   function renderResults(){
+    if(window.S8HOST&&!HOST&&!S.cfg.snap){var sr=S.cfg.showResults;S.cfg.showResults=false;try{renderResults0();}finally{S.cfg.showResults=sr;}return;}
+    if(!useSnap())return renderResults0(); var kv=S.votes,kp=PICKS,sd=snapData(); S.votes=sd.V; PICKS=sd.P;
+    try{renderResults0();}finally{S.votes=kv;PICKS=kp;}
+  }
+  function renderResults0(){
     var box=$('#vv-results');if(box.hidden)return;
     if(!S.cfg.showResults&&!HOST){box.innerHTML=wait(C('v.rw','Results will appear here','h3'),'<p>'+C('v.rws','The host will share the House’s results once voting has closed.')+'</p>');return;}
     var T0=tally(), pr=paperRows(T0), rows=(pr||websiteScores(T0)).slice().sort(function(a,b){return b.score-a.score;});
@@ -2997,7 +3005,7 @@ VIEW.vote=(function(){
     if(!HOST){box.innerHTML='<div class="vcard hostlock"><span class="disc">'+icon('lock')+'</span>'+C('v.hl','Host controls','h4')+'<p class="how">'+C('v.hlp','Enter the host passcode to open, close and reset the votes.')+'</p>'+
       '<form id="v-hpf" class="addrow"><input id="v-hp" type="password" autocomplete="off" placeholder="Passcode"><button class="btn primary" type="submit">'+icon('unlock')+'Unlock</button></form><p class="qnote" id="v-hpn"></p></div>';
       $('#v-hpf').addEventListener('submit',function(e){e.preventDefault();var pw=$('#v-hp').value.trim().toLowerCase();$('#v-hpn').textContent='Checking…';
-        (window.S8HOST?window.S8HOST.signIn(pw):Promise.resolve(h8(pw)===HOSTHASH)).then(function(ok){if(ok){HOST=true;try{sessionStorage.setItem('s8-host','1');}catch(x){}renderHost();}else{$('#v-hpn').textContent='That passcode isn’t right.';}});});
+        (window.S8HOST?window.S8HOST.signIn(pw):Promise.resolve(h8(pw)===HOSTHASH)).then(function(ok){if(ok){HOST=true;try{sessionStorage.setItem('s8-host','1');}catch(x){}restartL();renderHost();}else{$('#v-hpn').textContent='That passcode isn’t right.';}});});
       try{$('#v-hp').focus();}catch(x){}return;}
     box.innerHTML='<p class="vq">'+C('v.ht','Host controls')+'</p><p class="vsub">'+C('v.hs','In the session only the host would see this. Changes reach everyone’s screen.')+'</p><div class="grid2" style="margin-top:20px">'+
       '<div class="vcard">'+
@@ -3005,7 +3013,7 @@ VIEW.vote=(function(){
       '<p class="how-dot">Drivers, two at a time: '+({idle:'not open',add:'add window open',vote:'voting open',closed:'closed'})[ph]+'</p></div>'+
       '<div class="vcard"><span class="lab">'+C('v.h3b','Drivers, two at a time')+'</span><div class="hostrow"><button type="button" class="btn primary sm" data-go="vote" data-min="10">Open · 10 min</button></div>'+
       '<span class="lab">'+C('v.h4','Pick five (risks)')+'</span><div class="hostrow"><button type="button" class="btn primary sm" data-pk5="40">Open · 40 min</button><button type="button" class="btn ghost sm" id="v-pkstop">Close pick five</button></div>'+
-      '<p class="how-dot">Pick five is '+(pickOpen()?'open, '+fmt(S.cfg.pickEnds-Date.now())+' left':'closed')+'.</p>'+
+      '<p class="how-dot">Pick five is '+(pickOpen()?'open, '+fmt(S.cfg.pickEnds-now())+' left':'closed')+'.</p>'+
       '<span class="lab">'+C('v.h5b','Drivers, and everything')+'</span><div class="hostrow"><button type="button" class="btn ghost sm" id="v-stop">Close now</button><button type="button" class="btn ghost sm danger" id="v-reset">Clear all votes and picks</button></div></div></div>'+
       '<div class="vcard" style="margin-top:16px"><h4>'+C('v.h8','The paper’s model')+'</h4><p class="how" style="font-size:14px">'+C('v.h9','Once voting has closed, calculate the drivers’ scores with the model from Salganik and Levy (2015). The results page then shows these instead of the simple score. It takes a few seconds.')+'</p>'+
         '<div class="hostrow"><button type="button" class="btn primary sm" id="v-calc">'+C('v.calc','Calculate')+'</button>'+(S.cfg.paper?'<button type="button" class="btn ghost sm" id="v-uncalc">'+C('v.uncalc','Go back to the simple score')+'</button>':'')+'</div>'+
@@ -3013,12 +3021,13 @@ VIEW.vote=(function(){
     var cb=$('#v-calc');cb.addEventListener('click',function(){var T0=tally();if(!T0.V.length){cb.textContent='No choices yet';return;}cb.disabled=true;cb.textContent='Calculating…';
       setTimeout(function(){var R=paperScores(T0,3000,1500,10);saveCfg({paper:{n:T0.V.length,at:Date.now(),rows:R.map(function(r){return {id:r.x.id,score:r.score,lo:r.lo,hi:r.hi,seen:r.seen};})}});},30);});
     var ub=$('#v-uncalc');if(ub)ub.addEventListener('click',function(){saveCfg({paper:null});});
-    $$('[data-sr]',box).forEach(function(b){b.addEventListener('click',function(){saveCfg({showResults:b.dataset.sr==='1'});});});
+    $$('[data-sr]',box).forEach(function(b){b.addEventListener('click',function(){var on=b.dataset.sr==='1';saveCfg(on&&window.S8HOST?{showResults:true,snap:buildSnap()}:{showResults:on,snap:null});});});
     $$('[data-go]',box).forEach(function(b){b.addEventListener('click',function(){S.pair=null;saveCfg({phase:b.dataset.go,endsAt:Date.now()+(+b.dataset.min)*60000});});});
-    $('#v-stop').addEventListener('click',function(){saveCfg({endsAt:Date.now()-1});});
+    $('#v-stop').addEventListener('click',function(){saveCfg({phase:'closed',endsAt:Date.now()-1});});
     $$('[data-pk5]',box).forEach(function(b){b.addEventListener('click',function(){saveCfg({pickPhase:'open',pickEnds:Date.now()+(+b.dataset.pk5)*60000});});});
-    $('#v-pkstop').addEventListener('click',function(){saveCfg({pickEnds:Date.now()-1});});
-    var rs=$('#v-reset'),armed=false;rs.addEventListener('click',function(){if(!armed){armed=true;rs.textContent='Click again to clear';return;}resetSet();});
+    $('#v-pkstop').addEventListener('click',function(){saveCfg({pickPhase:'closed',pickEnds:Date.now()-1});});
+    var rs=$('#v-reset');if(Date.now()-clearArmed<6000)rs.textContent='Click again to clear';
+    rs.addEventListener('click',function(){if(Date.now()-clearArmed>6000){clearArmed=Date.now();rs.textContent='Click again to clear';return;}clearArmed=0;resetSet();});
   }
   /* ---------- pick five, on the same map as everywhere else ---------- */
   function pickBar(id){
@@ -3029,15 +3038,16 @@ VIEW.vote=(function(){
   /* the same choice as a round button by the drawer's Back: a plus, then the pick's number once it's in your five */
   function pickCircle(id){if(!pickOpen())return '';var i=myPick.indexOf(id),on=i>=0,full=!on&&myPick.length>=PICKMAX;
     return '<button type="button" class="pkc'+(on?' on':' pill')+'" data-pk="'+id+'" aria-pressed="'+on+'"'+(full?' disabled':'')+' aria-label="'+esc(T(on?'copy.v.unpick':'copy.v.pickit'))+'" title="'+esc(T(on?'copy.v.unpick':'copy.v.pickit'))+'">'+(on?'<b>'+(i+1)+'</b>':icon('plus')+'<span>'+esc(T('copy.v.pickit'))+'</span>')+'</button>';}
-  BASE['copy.v.pkclosed']='Picking opens when the host starts it.'; BASE['copy.v.unpick']='Remove from my five'; BASE['copy.v.pickit']='Pick this risk';
+  BASE['copy.v.pkclosed']='Picking opens when the host starts it.'; BASE['copy.v.nq']='First, your room and name'; BASE['copy.v.nqs']='Choose your room and type your first name, then pick again.'; BASE['copy.v.unpick']='Remove from my five'; BASE['copy.v.pickit']='Pick this risk';
   function togglePick(id){
     if(!pickOpen())return; if(needName()){toast(T('copy.v.nq'),T('copy.v.nqs'));go('vote','risks');return;} var i=myPick.indexOf(id);
     if(i>=0){myPick.splice(i,1);toast('Removed: '+T('risk.'+id+'.mt'),myPick.length+' of '+PICKMAX+' picked');}
-    else if(myPick.length<PICKMAX){myPick.push(id);toast('Picked: '+T('risk.'+id+'.mt'),myPick.length<PICKMAX?myPick.length+' of '+PICKMAX+' picked':'That’s five. Press “Submit my picks” below the map.',true);}
+    else if(myPick.length<PICKMAX){myPick.push(id);toast('Picked: '+T('risk.'+id+'.mt'),myPick.length<PICKMAX?myPick.length+' of '+PICKMAX+' picked':'That’s five. Press “Submit my picks” above the map.',true);}
     pickSaved=false; renderPick(); var pb=$('#drawer .pickbar'); if(pb&&DRAWER.id)pb.innerHTML=pickBar(DRAWER.id); var pc=$('#drawer .pkcw'); if(pc&&DRAWER.id)pc.innerHTML=pickCircle(DRAWER.id);
   }
   document.addEventListener('click',function(e){var b=e.target.closest('[data-pk]');if(b)togglePick(b.getAttribute('data-pk'));});
-  function savePick(){pickSaved=true;if(S.live)S.db.doc('picks/'+S.me).set({ids:myPick.slice(),name:ME.name||'',room:ME.room||0,at:Date.now()}).catch(function(){});else PICKS[S.me]={ids:myPick.slice(),at:Date.now()};renderPick();}
+  var pickBusy=false;
+  function savePick(){pickSaved=true;if(S.live){pickBusy=true;S.db.doc('picks/'+S.me).set({ids:myPick.slice(),name:ME.name||'',room:ME.room||0,at:Date.now()}).then(function(){pickBusy=false;},function(){pickBusy=false;pickSaved=false;renderPick();toast('Your picks didn’t send','Check your connection and press Submit again.');});}else PICKS[S.me]={ids:myPick.slice(),at:Date.now()};renderPick();}
   function renderPick(){
     var box=$('#vv-risks');
     if(!$('#pk-box')){
@@ -3049,7 +3059,7 @@ VIEW.vote=(function(){
       '<p class="vsub">'+C('v.psub','Pick the ones that matter most to you, and where you’d most like to find out what could be done about them.')+'</p>'+
       '<ol class="steps"><li>'+C('v.p1','Click a circle on the map to read the risk.')+'</li><li>'+C('v.p2','Press “Pick this risk”.')+'</li><li>'+C('v.p3','When you have five, press “Submit my picks”.')+'</li></ol>';
     if(open&&needName())h+=nameForm();
-    if(!open)h+='<p class="banner" style="display:inline-block;margin-top:14px">'+(S.cfg.pickPhase!=='open'?C('v.pn','Not open yet. Explore the map; picking opens when the host starts it.'):C('v.pc','Picking has closed. Thank you.'))+'</p>';
+    if(!open)h+='<p class="banner" style="display:inline-block;margin-top:14px">'+(S.cfg.pickPhase!=='open'&&S.cfg.pickPhase!=='closed'?C('v.pn','Not open yet. Explore the map; picking opens when the host starts it.'):C('v.pc','Picking has closed. Thank you.'))+'</p>';
     $('#pk-head').innerHTML=h;
     var pk={};myPick.forEach(function(id,i){pk[id]=i+1;});mv.setPicked(pk);
     var dots='';for(var d=0;d<PICKMAX;d++)dots+='<i class="'+(d<myPick.length?'on':'')+'">'+(d<myPick.length?d+1:'')+'</i>';
@@ -3079,24 +3089,39 @@ VIEW.vote=(function(){
   var LIS={v:null,p:null};
   function stopL(f){if(typeof f==='function'){try{f();}catch(e){}return true;}return false;}
   function listenAll(){
-    if(!S.db)return; var want=tab==='results'||tab==='host';
+    if(!S.db)return; var want=HOST?(tab==='results'||tab==='host'):(tab==='results'&&!window.S8HOST);
     if(want&&!LIS.v){
-      LIS.v=S.db.collection('votes').onSnapshot(function(snap){if(!LIS.v)return;S.votes=snap.docs.map(function(d){var x=d.data();x._id=d.id;return x;});renderResults();renderHost();},function(){LIS.v=LIS.p=null;})||true;
+      LIS.v=S.db.collection('votes').onSnapshot(function(snap){if(!LIS.v)return;S.votes=snap.docs.map(function(d){var x=d.data();x._id=d.id;return x;});renderResults();renderHost();queueSnap();},function(){LIS.v=LIS.p=null;})||true;
       LIS.p=S.db.collection('picks').onSnapshot(function(snap){if(!LIS.p)return;PICKS={};snap.docs.forEach(function(d){PICKS[d.id]=d.data();});
-        if(PICKS[S.me]&&!myPick.length){myPick=(PICKS[S.me].ids||[]).slice();pickSaved=true;renderPick();}renderResults();},function(){LIS.v=LIS.p=null;})||true;
+        if(PICKS[S.me]&&!myPick.length){myPick=(PICKS[S.me].ids||[]).slice();pickSaved=true;renderPick();}renderResults();queueSnap();},function(){LIS.v=LIS.p=null;})||true;
     }else if(!want&&LIS.v&&LIS.v!==true){
       stopL(LIS.v);stopL(LIS.p);LIS.v=LIS.p=null;
       S.votes=S.votes.filter(function(v){return v.by===S.me;}); var mine=PICKS[S.me]; PICKS={}; if(mine)PICKS[S.me]=mine;
     }
   }
+  function restartL(){if(LIS.v&&LIS.v!==true){stopL(LIS.v);stopL(LIS.p);} LIS.v=LIS.p=null; listenAll();}
+  /* Members on the website don't read every vote: when results are shown, the host's browser publishes a compact copy
+     of the votes and picks inside the settings document (cfg.snap), which every member already listens to. */
+  var SNAPT=0, SNAPK='', SNAPC=null;
+  function buildSnap(){var v=[];S.votes.forEach(function(x){if(x.set==='drivers'&&v.length<12000)v.push([x.a,x.b,x.w||'',x.r||'',x.by||''].join('|'));});
+    var pk=[];Object.keys(PICKS).forEach(function(k){var q=PICKS[k];if(q&&q.ids&&q.ids.length)pk.push(q.ids.join(','));});return {at:Date.now(),v:v,p:pk};}
+  function queueSnap(){if(!HOST||!S.cfg.showResults||!LIS.v||!window.S8HOST||SNAPT)return;
+    SNAPT=setTimeout(function(){SNAPT=0;if(!HOST||!S.cfg.showResults)return;var sn=buildSnap(),k=sn.v.length+':'+sn.p.join(';').length+':'+sn.v.slice(-3).join();if(k===SNAPK)return;SNAPK=k;saveCfg({snap:sn});},12000);}
+  function useSnap(){return !!window.S8HOST&&!HOST&&!!S.cfg.snap;}
+  function snapData(){var sn=S.cfg.snap;if(SNAPC&&SNAPC.at===sn.at)return SNAPC;
+    var V=(sn.v||[]).map(function(t){var f=t.split('|');return {set:'drivers',a:f[0],b:f[1],w:f[2]||null,r:f[3]||undefined,by:f[4]};}),P={};
+    (sn.p||[]).forEach(function(t,i){P['s'+i]={ids:t.split(',')};});SNAPC={at:sn.at,V:V,P:P};return SNAPC;}
   function connect(db,user){
     S.db=db;
     var meP=(user&&user.id?Promise.resolve(user.id()).catch(function(){return null;}):Promise.resolve(null)).then(function(id){if(id)S.me=id;});
     db.doc('config/main').onSnapshot(function(snap){S.live=true;setMode();var d=snap&&snap.exists!==false&&snap.data?snap.data():null;
+      if(d&&cfgSeen&&d.stamp&&d.stamp!==S.cfg.stamp){var off=d.stamp-Date.now();if(Math.abs(off)<3600000)OFF=Math.abs(off)<1500?0:off;} if(d)cfgSeen=true;
+      if(d&&cfgSeen&&d.resetAt&&d.resetAt!==S.cfg.resetAt&&d.stamp!==S.cfg.stamp){S.votes=[];S.myVotes=0;S.undo=null;S.pair=null;myPick=[];pickSaved=false;PICKS={};}
       if(d&&d.stamp!==S.cfg.stamp){d.set='drivers';var ch=d.set!==S.cfg.set,sr=!!d.showResults&&!S.cfg.showResults;S.cfg=Object.assign({},DEF,d);if(ch)S.pair=null;if(sr&&!LIS.v)listenAll();renderAll();}},function(){setMode();});
     /* your own picks come back on reload; everyone's votes and picks are only read on the results and host screens (listenAll) */
     meP.then(function(){db.doc('picks/'+S.me).onSnapshot(function(snap){var d=snap&&snap.exists!==false&&snap.data?snap.data():null;
-      if(d&&d.ids&&!myPick.length){myPick=d.ids.slice();pickSaved=true;if(!LIS.v)PICKS[S.me]=d;renderPick();}},function(){});});
+      if(d&&d.ids&&!myPick.length){myPick=d.ids.slice();pickSaved=true;if(!LIS.v)PICKS[S.me]=d;renderPick();}
+      else if(!d&&pickSaved&&!pickBusy){myPick=[];pickSaved=false;delete PICKS[S.me];renderPick();}},function(){});});
     listenAll();
     db.collection('ideas').onSnapshot(function(snap){S.ideas=snap.docs.map(function(d){return d.data();});renderHost();renderResults();},function(){});
   }

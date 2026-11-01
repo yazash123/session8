@@ -31,8 +31,10 @@ The page writes to four collections in the shared project (ID `session-5-activit
 | `s8-picks` | member (id = browser id): their five risks `{ids, name, room, at}` | the member |
 | `s8-ideas` | driver a member added during the vote | any member; only the host hides or removes |
 
-**Reads stay small.** Only the host screen and the results screen listen to every vote and pick. A member
-who is voting reads only the session settings, the added ideas and their own picks. With about 100
+**Reads stay small.** Only the signed-in host's screen reads every vote and pick. When the host shows the
+results, the host's browser puts a compact copy of the votes and picks into the settings document (and
+refreshes it every ~12 seconds while results are on), so members see the results without reading every vote.
+A member reads only the session settings, the added ideas and their own picks. With about 100
 members that is roughly 15,000 to 25,000 reads for the evening instead of several hundred thousand,
 well inside the free 50,000 a day.
 

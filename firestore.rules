@@ -21,24 +21,22 @@ service cloud.firestore {
     function nowMs() { return request.time.toMillis(); }
     // a time from the member's own clock, within a day of Google's (clocks are often a few minutes out)
     function recent(t) { return t is int && t > nowMs() - 86400000 && t < nowMs() + 86400000; }
-    // members can only list everyone's votes and picks once the host shows the results
-    function resultsShown() {
-      return get(/databases/$(database)/documents/s8-config/main).data.get('showResults', false) == true;
-    }
 
     // The host's settings: which vote is open, timers, whether results show. One document.
+    // When results are shown it also carries a compact copy of the votes and picks (snap), so members
+    // never need to read every vote: only the signed-in host can list s8-votes and s8-picks.
     match /s8-config/{id} {
       allow read: if true;
       allow write: if isHost() && id == 'main'
         && request.resource.data.keys().hasOnly(['set', 'phase', 'endsAt', 'addOpen', 'pickPhase',
-             'pickEnds', 'showResults', 'stamp', 'paper']);
+             'pickEnds', 'showResults', 'stamp', 'paper', 'snap', 'resetAt']);
     }
 
     // One document per pairwise choice. Never edited. A member can take back a choice for 15 minutes
     // ("Undo my last choice"); after that only the host can clear it.
     match /s8-votes/{id} {
       allow get: if true;
-      allow list: if isHost() || resultsShown();
+      allow list: if isHost();
       allow create: if id.size() <= 40
         && request.resource.data.keys().hasOnly(['set', 'a', 'b', 'w', 'r', 'by', 'name', 'room', 'at'])
         && request.resource.data.keys().hasAll(['set', 'a', 'b', 'w', 'by', 'name', 'room', 'at'])
@@ -60,7 +58,7 @@ service cloud.firestore {
     // Each member's five risks. The document id is the member's browser id; sending again replaces it.
     match /s8-picks/{pid} {
       allow get: if true;
-      allow list: if isHost() || resultsShown();
+      allow list: if isHost();
       allow create, update: if pid.size() >= 2 && pid.size() <= 40
         && request.resource.data.keys().hasOnly(['ids', 'name', 'room', 'at'])
         && request.resource.data.keys().hasAll(['ids', 'at'])
