@@ -1564,7 +1564,7 @@ function MapView(box,o){
     h.firstChild.classList.add('hn');
     if(o.onHub){h.setAttribute('aria-label',T(g.nk)+'. '+g.m.length+' risks');h.addEventListener('click',function(e){if(document.body.classList.contains('editing')&&e.target.closest('[data-k]'))return;o.onHub(g.k);});}
     box.appendChild(h); M.hubs[g.k]=h;
-    h.addEventListener('mouseenter',function(){setHot(g.k);}); h.addEventListener('mouseleave',function(){setHot(null);});
+    h.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')setHot(g.k);}); h.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')setHot(null);});
     g.m.forEach(function(id){
       M.hk[id]=g.k;
       var p=document.createElementNS(SVGNS,'path'); p.setAttribute('pathLength','1'); p.style.setProperty('--c',rcol(id)); p.setAttribute('data-g',g.k); teth.appendChild(p); M.paths[id]=p;
@@ -1572,7 +1572,7 @@ function MapView(box,o){
       s.setAttribute('data-r',id); s.setAttribute('aria-label',T(labelKey(id))+(isNew(id)?'. Added by members.':'')+' Read it in full.');
       s.innerHTML='<span class="pk"></span>';
       s.addEventListener('click',function(){if(o.onSat)o.onSat(id);});
-      s.addEventListener('mouseenter',function(){showLab(id,true);}); s.addEventListener('mouseleave',function(){showLab(id,false);});
+      s.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')showLab(id,true);}); s.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')showLab(id,false);});
       s.addEventListener('focus',function(){showLab(id,true);}); s.addEventListener('blur',function(){showLab(id,false);});
       box.appendChild(s); M.sats[id]=s;
       var l=document.createElement('div'); l.className='ml'; l.innerHTML='<em>'+id+'</em>'+F(labelKey(id),'span','lt',' data-ro');
@@ -1886,7 +1886,7 @@ function Pot(box,o){
     unpeek(); if(o.onBall)o.onBall(id,b);
   });
   box.addEventListener('keydown',function(e){var b=e.target.closest('.pb');if(b&&e.target===b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();b.click();}if(e.key==='Escape'){unpeek();if(o.onEsc)o.onEsc();}});
-  box.addEventListener('mouseover',function(e){var b=e.target.closest('.pb');showTip(b&&b.dataset.r,!!b);});
+  box.addEventListener('pointerover',function(e){if(e.pointerType!=='mouse')return;var b=e.target.closest('.pb');showTip(b&&b.dataset.r,!!b);});
   box.addEventListener('mouseleave',function(){showTip(null,false);});
   box.addEventListener('focusin',function(e){var b=e.target.closest('.pb');showTip(b&&b.dataset.r,!!b);});
   box.addEventListener('focusout',function(){showTip(null,false);});
@@ -2456,6 +2456,11 @@ VIEW.together=(function(){
     var rt=0;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){if(CUR==='together')lines();},140);});
     /* the bottom of the page: the same map again, then the risks fall into the container */
     sm=MapView($('#tg-smap'),{preset:'A',labels:'hover',onSat:function(id){if(!hold)return;sm.setHl(id);card(id,sm.M.sats[id],$('#tg-stage'),function(){sm.setHl(null);});}});
+    $('#tg-stage').addEventListener('click',function(e){
+      if(!hold||e.target.isContentEditable||e.target.closest('.ms,.tgcard,button,a,input,textarea'))return;
+      var best=null,bd=1e9;Object.keys(sm.M.sats).forEach(function(id){var b=sm.M.sats[id].getBoundingClientRect();if(!b.width)return;
+        var d=Math.hypot(e.clientX-(b.left+b.width/2),e.clientY-(b.top+b.height/2));if(d<=b.width/2+8&&d<bd){bd=d;best=id;}});
+      if(best){e.stopPropagation();sm.setHl(best);card(best,sm.M.sats[best],$('#tg-stage'),function(){sm.setHl(null);});}});
     if($('#tg-down'))$('#tg-down').addEventListener('click',function(e){if(e.target.isContentEditable)return;closeCard();var run=$('#tg-run');window.scrollTo({top:run.getBoundingClientRect().top+window.scrollY+run.offsetHeight-$('#tg-stage').clientHeight-$('#tabs').offsetHeight+2,behavior:reduce?'auto':'smooth'});});
     pot=Pot($('#tg-pot'),{rim:true,full:true,cls:'tgp',dy:function(w,h){return w<640?Math.min(70,h*.08):0;},
       onBall:function(id){if(!live)return;var g=pot.geom();if(pot.st.big===id){pot.st.big=null;pot.draw();}else pot.setBig(id,{big:Math.min(g.w,g.h)*(g.w<640?.48:.34)});var f=$('.pfull',pot.B[id]);if(f)f.scrollTop=0;},
@@ -2718,7 +2723,7 @@ VIEW.together=(function(){
         clearTimeout(pa._t);pa._t=setTimeout(function(){pa.style.transition='';sa.style.transition='';},1000);});}
     Object.keys(sm.M.paths).forEach(function(id){var pa=sm.M.paths[id];pa.style.strokeDasharray='1';pa.style.strokeDashoffset=Math.max(e0,+(pa.dataset.g||0)).toFixed(3);});
     var started=p>.33; sm.el.classList.toggle('let',started); pot.el.classList.toggle('pre',!started);
-    var wasHold=hold; hold=p<.3; sm.el.classList.toggle('held',hold); if(wasHold&&!hold)closeCard();
+    var wasHold=hold; hold=p<.33; sm.el.classList.toggle('held',hold); if(wasHold&&!hold)closeCard();
     var ea=seg(p,.28,.36); $('#tg-a').style.opacity=(1-ea).toFixed(3); $('#tg-a').style.pointerEvents=hold?'auto':'none';
     /* the container rises to meet them */
     var c=ease(seg(p,.52,.9)), dy=(1-c)*H*1.05, hang=seg(p,.44,.62);
