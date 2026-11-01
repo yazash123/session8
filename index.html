@@ -2317,7 +2317,7 @@ VIEW.setup=(function(){
   var el=$('#v-setup'), mv=null, sel=0, built=false;
   function build(){
     el.innerHTML='<div class="wrap"><div class="setup sup"><div class="left"><div id="s-in"></div>'+
-      '<div class="sqrow">'+C('s.q','Which room are you in?','h2','sq')+guideBtn('setup')+'</div>'+guidePanel('setup')+
+      '<div class="sqrow">'+C('s.q','Which room are you in?','h2','sq')+'</div>'+
       '<p class="how">'+C('s.how','Your facilitator will tell you. Each room reads three or four risks from one area of the risk map, so between us we cover all 27.')+'</p>'+
       '<div class="nums" id="s-nums" role="group" aria-label="Room number">'+ROOMS.map(function(r){return '<button type="button" class="num" data-n="'+r.n+'" aria-pressed="false">'+r.n+'</button>';}).join('')+'</div>'+
       '<div class="spick" id="s-pick" aria-live="polite"></div>'+
@@ -2437,7 +2437,7 @@ VIEW.room=(function(){
    Set the sun and the map is left on its own; the drivers sit underneath,
    and choosing one draws arrows up to the risks members linked it to in Session 6.
    ============================================================ */
-BASE['copy.url.ice']=''; BASE['copy.url.drv2']=''; BASE['copy.url.soon']='This page isn’t linked yet'; BASE['copy.url.soonb']='It will be linked here before the session.';
+BASE['copy.url.ice']='https://www.houseofthepeople.uk/iceberg-activity'; BASE['copy.url.drv2']='https://www.houseofthepeople.uk/drivers-part-2'; BASE['copy.url.soon']='This page isn’t linked yet'; BASE['copy.url.soonb']='It will be linked here before the session.';
 VIEW.together=(function(){
   var el=$('#v-together'), grown=false, GSET=0, hold=true, sm=null, pot=null, live=false, REST=null, raf=0, hz=null, ai=0, sunk=false, drv=null, peek=null, timer=null, built=false;
   /* the first map is the one members already know: the 13 risks, before anything was added */
@@ -2455,7 +2455,7 @@ VIEW.together=(function(){
           '<div class="tgmore" hidden><section class="rsec"><h3>'+C('d.yours','In your own words')+'</h3>'+quoteList(d.q.map(function(q,i){return p+'q.'+i;}))+'</section>'+
           (d.wi.length?'<section class="rsec"><h3>'+C('dr.wi','Drivers members wrote themselves, filed here')+'</h3><ul class="wis">'+d.wi.map(function(q,i){return F(p+'wi.'+i,'li');}).join('')+'</ul></section>':'')+'</div>'+
           '<button type="button" class="btn wy tgx" aria-expanded="false">'+icon('list')+C('d.yours')+'</button></div>';}).join('')+
-        '<div class="tglink"><button type="button" class="btn sm tgice tgdl" data-url="url.drv2"><span class="tgit">'+C('tg.d2t','What you said about the drivers')+'</span>'+icon('next')+'</button></div>'+'<div class="tgdet" id="tg-det" aria-live="polite" hidden><div class="tgdi"><div class="tgdbox"></div></div></div></div></div></section>'+
+        '<div class="tglink"><button type="button" class="btn sm tgice tgdl" data-url="url.drv2"><span class="tgit">'+C('tg.d2t','View the entire driver connection map')+'</span>'+icon('next')+'</button></div>'+'<div class="tgdet" id="tg-det" aria-live="polite" hidden><div class="tgdi"><div class="tgdbox"></div></div></div></div></div></section>'+
       '<section class="tgrun" id="tg-run" aria-label="What you added"><div class="tgstage" id="tg-stage"><div class="tgsmap" id="tg-smap"></div><div class="tgpot" id="tg-pot"></div>'+
         '<div class="tgend tga" id="tg-a"><p class="tgsec">'+C('tg.s3','3 · What you added')+'</p>'+C('tg.at','The new <b>risk map</b>','h2','','1')+'<p class="tgkey"><span><i class="kf"></i>'+C('tg.kh','Horizon scan risks')+'</span><span><i class="ke"></i>'+C('tg.kn','New risks')+'</span></p>'+
           '<p class="tgkhint">'+C('tg.khint','Click any risk to learn more: what members wrote about the new risks, and how they put the horizon scan risks in their own words.')+'</p></div>'+
