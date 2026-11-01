@@ -107,6 +107,17 @@ with sync_playwright() as p:
     host.locator("[data-go]").first.click(); host.wait_for_timeout(900)
     host.locator("#v-stop").click(); host.wait_for_timeout(900)
     ok("closed" in slow.inner_text("#vv-drivers").lower(), "Close now closes voting for a member with a slow clock")
+    # Download: the host's copy before clearing
+    import csv, io
+    host.goto(URL + "#vote-host"); host.wait_for_timeout(900)
+    with host.expect_download() as d1: host.click("#v-dlv")
+    rows = list(csv.reader(io.StringIO(open(d1.value.path(), encoding="utf-8-sig").read())))
+    nv = len([k for k in host.evaluate("Object.keys(window.__fakeload())") if k.startswith("s8-votes/")])
+    ok(len(rows) - 1 == nv and rows[0][0] == "Time" and all(r[10] or r[11] for r in rows[1:]), f"votes download has a row per vote ({len(rows)-1} of {nv}), each with a choice or a reason")
+    with host.expect_download() as d2: host.click("#v-dlp")
+    prow = list(csv.reader(io.StringIO(open(d2.value.path(), encoding="utf-8-sig").read())))
+    ok(len(prow) == 2 and prow[1][1] == "Chi" and prow[1][4] and prow[1][9].count(" ") == 4, f"picks download has Chi's five picks {prow[1][:5] if len(prow)>1 else prow}")
+    print("   sample vote row:", rows[1][:2], rows[1][5:11])
     # Clear: two clicks, everything emptied, members' screens reset
     host.locator("#v-reset").click(); host.wait_for_timeout(300); host.locator("#v-reset").click(); host.wait_for_timeout(1200)
     db = host.evaluate("window.__fakeload()")

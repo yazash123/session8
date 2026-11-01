@@ -42,6 +42,13 @@ well inside the free 50,000 a day.
 to Firebase as `host@houseofthepeople.uk` with that passcode as the password. The rules let only that
 sign-in change settings, hide ideas or clear votes. The passcode is never in the page source.
 
+## Keeping the results
+
+Host controls → **Keep a copy** → *Download votes* and *Download picks* save two CSV files (open in Excel or
+Google Sheets): one row per choice (time, name, room, the two options, what they chose or why they couldn't
+decide) and one row per member's five picks. Download after the session, before anything else.
+**Clear erases votes and picks for good**: Firebase's free plan has no undo. Use it only for test votes.
+
 ## Before Tuesday (Yaz)
 
 1. **Host user.** Firebase console → `session-5-activity` → Build → Authentication → Get started →

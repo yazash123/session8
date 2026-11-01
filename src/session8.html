@@ -2845,6 +2845,20 @@ VIEW.vote=(function(){
     if(S.live)S.db.doc('ideas/'+it.id).set(it).catch(function(){});else{S.ideas.push(it);renderAll();}}
   function setHidden(id,h){if(S.live)S.db.doc('ideas/'+id).update({hidden:h}).catch(function(){});else{S.ideas.forEach(function(x){if(x.id===id)x.hidden=h;});renderAll();}}
   var clearArmed=0;
+  /* ---------- the host's copy of everything: CSV files that open in Excel or Sheets ---------- */
+  function cell(v){v=v==null?'':String(v);return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+  function stamp(t){if(!t)return '';var d=new Date(t),z=function(n){return ('0'+n).slice(-2);};return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+' '+z(d.getHours())+':'+z(d.getMinutes())+':'+z(d.getSeconds());}
+  function csvTitle(id){if(!id)return '';var x=S.ideas.filter(function(i){return i.id===id;})[0];if(x)return x.t+' (added by a member)';
+    return T(/^D\d$/.test(id)?'driver.'+id+'.t':'risk.'+id+'.mt')||id;}
+  function voteRows(){var r=[['Time','Name','Room','Voter id','Vote','Option A id','Option A','Option B id','Option B','Chose id','Chose','Couldn’t decide because']];
+    S.votes.slice().sort(function(a,b){return (a.at||0)-(b.at||0);}).forEach(function(v){r.push([stamp(v.at),v.name||'',v.room||'',v.by||'',v.set||'',v.a,csvTitle(v.a),v.b,csvTitle(v.b),v.w||'',v.w?csvTitle(v.w):'',v.w?'':(v.r||'Can’t decide')]);});return r;}
+  function pickRows(){var r=[['Submitted','Name','Room','Voter id','Pick 1','Pick 2','Pick 3','Pick 4','Pick 5','Pick ids']];
+    Object.keys(PICKS).forEach(function(k){var p=PICKS[k]||{},ids=p.ids||[];var row=[stamp(p.at),p.name||'',p.room||'',k];for(var i=0;i<5;i++)row.push(ids[i]?csvTitle(ids[i]):'');row.push(ids.join(' '));r.push(row);});return r;}
+  function saveCSV(kind,rows){var n=$('#v-dln'),txt='\ufeff'+rows.map(function(x){return x.map(cell).join(',');}).join('\r\n');
+    var d=new Date(),z=function(q){return ('0'+q).slice(-2);},name='session8-'+kind+'-'+d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'-'+z(d.getHours())+z(d.getMinutes())+'.csv';
+    try{var b=new Blob([txt],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},5000);
+      if(n)n.textContent='Downloaded '+name+' ('+(rows.length-1)+' rows). If nothing appeared, check your Downloads folder.';}
+    catch(e){if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){if(n)n.textContent='Downloading isn’t allowed here, so the '+kind+' were copied: paste into a spreadsheet.';});}}
   function resetSet(){var set='drivers';
     if(S.live){S.votes.filter(function(v){return v.set===set;}).forEach(function(v){if(v._id)S.db.doc('votes/'+v._id).delete().catch(function(){});});
       S.ideas.filter(function(x){return x.set===set;}).forEach(function(x){S.db.doc('ideas/'+x.id).delete().catch(function(){});});}
@@ -3014,7 +3028,10 @@ VIEW.vote=(function(){
       '<div class="vcard"><span class="lab">'+C('v.h3b','Drivers, two at a time')+'</span><div class="hostrow"><button type="button" class="btn primary sm" data-go="vote" data-min="10">Open · 10 min</button></div>'+
       '<span class="lab">'+C('v.h4','Pick five (risks)')+'</span><div class="hostrow"><button type="button" class="btn primary sm" data-pk5="40">Open · 40 min</button><button type="button" class="btn ghost sm" id="v-pkstop">Close pick five</button></div>'+
       '<p class="how-dot">Pick five is '+(pickOpen()?'open, '+fmt(S.cfg.pickEnds-now())+' left':'closed')+'.</p>'+
-      '<span class="lab">'+C('v.h5b','Drivers, and everything')+'</span><div class="hostrow"><button type="button" class="btn ghost sm" id="v-stop">Close now</button><button type="button" class="btn ghost sm danger" id="v-reset">Clear all votes and picks</button></div></div></div>'+
+      '<span class="lab">'+C('v.h5b','Drivers, and everything')+'</span><div class="hostrow"><button type="button" class="btn ghost sm" id="v-stop">Close now</button><button type="button" class="btn ghost sm danger" id="v-reset">Clear all votes and picks</button></div>'+
+      '<p class="how" style="font-size:14px;margin-top:8px">'+C('v.hclr','Clear erases the votes and picks for good. Download them first.')+'</p>'+
+      '<span class="lab">'+C('v.hdl','Keep a copy')+'</span><div class="hostrow"><button type="button" class="btn primary sm" id="v-dlv">'+icon('list')+'Download votes ('+S.votes.length+')</button><button type="button" class="btn primary sm" id="v-dlp">'+icon('list')+'Download picks ('+Object.keys(PICKS).length+')</button></div>'+
+      '<p class="qnote" id="v-dln" aria-live="polite"></p></div></div>'+
       '<div class="vcard" style="margin-top:16px"><h4>'+C('v.h8','The paper’s model')+'</h4><p class="how" style="font-size:14px">'+C('v.h9','Once voting has closed, calculate the drivers’ scores with the model from Salganik and Levy (2015). The results page then shows these instead of the simple score. It takes a few seconds.')+'</p>'+
         '<div class="hostrow"><button type="button" class="btn primary sm" id="v-calc">'+C('v.calc','Calculate')+'</button>'+(S.cfg.paper?'<button type="button" class="btn ghost sm" id="v-uncalc">'+C('v.uncalc','Go back to the simple score')+'</button>':'')+'</div>'+
         '<p class="how-dot">'+(S.cfg.paper?'Showing the paper’s model, from '+S.cfg.paper.n+' choices.':'Showing the simple score.')+'</p></div>';
@@ -3028,6 +3045,7 @@ VIEW.vote=(function(){
     $('#v-pkstop').addEventListener('click',function(){saveCfg({pickPhase:'closed',pickEnds:Date.now()-1});});
     var rs=$('#v-reset');if(Date.now()-clearArmed<6000)rs.textContent='Click again to clear';
     rs.addEventListener('click',function(){if(Date.now()-clearArmed>6000){clearArmed=Date.now();rs.textContent='Click again to clear';return;}clearArmed=0;resetSet();});
+    $('#v-dlv').addEventListener('click',function(){saveCSV('votes',voteRows());}); $('#v-dlp').addEventListener('click',function(){saveCSV('picks',pickRows());});
   }
   /* ---------- pick five, on the same map as everywhere else ---------- */
   function pickBar(id){
