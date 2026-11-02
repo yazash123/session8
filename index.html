@@ -2379,7 +2379,7 @@ VIEW.setup=(function(){
       C('s.name','And your name?','h3','sq2')+
       '<input class="field" id="s-name" maxlength="60" autocomplete="name" placeholder="Your full name" value="'+esc(ME.name)+'">'+
       '<div><button type="button" class="btn white r" id="s-join" disabled><span id="s-joinl"></span><span class="disc">'+icon('next')+'</span></button></div>'+
-      '<p class="qnote" id="s-note" aria-live="polite">'+C('s.full','Please use your full name: a few of us have similar names.')+'</p></div>'+
+      '<p class="qnote" id="s-note" aria-live="polite"></p></div>'+
       '<div><div id="s-box"></div></div></div></div>';
     mv=Pot($('#s-box'),{rim:true,rooms:true,peek:true,cls:'spot',
       onBall:function(id){var r=ROOM[sel];openRisk(id,{list:r?r.r:AREA[RISKS[id].a].m});}});
