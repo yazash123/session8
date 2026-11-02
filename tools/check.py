@@ -106,7 +106,7 @@ with sync_playwright() as p:
     slow.evaluate("(function(){var r=Date.now;Date.now=function(){return r()-180000;};})()")
     host.locator("[data-go]").first.click(); host.wait_for_timeout(900)
     host.locator("#v-stop").click(); host.wait_for_timeout(900)
-    ok("closed" in slow.inner_text("#vv-drivers").lower(), "Close now closes voting for a member with a slow clock")
+    ok("isn’t open" in slow.inner_text("#vv-drivers").lower() and slow.locator("#vv-drivers [data-pick]").count() == 0, "Close now closes voting for a member with a slow clock")
     # Download: the host's copy before clearing
     import csv, io
     host.goto(URL + "#vote-host"); host.wait_for_timeout(900)

@@ -1,6 +1,7 @@
 # Session 8: Our priorities
 
-The House of the People's Session 8 page (Tuesday 3 November): Recap, Set up, Our room and Ranking.
+The House of the People's Session 8 page (Tuesday 3 November): Recap, Set up, Our room and Ranking, plus a
+Glossary pop-up and a plain-text list of all 27 risks (`#read`) from the two buttons at the top right.
 Served by GitHub Pages at `https://yazash123.github.io/session8/` and framed into
 `houseofthepeople.uk/session8` by `webflow-embed.html`.
 

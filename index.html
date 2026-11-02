@@ -1295,6 +1295,60 @@ body:not(.editing) .guide .gnotes .gempty{display:none}
 .vjump:hover{color:#fff}
 @media (max-width:620px){.vjump{margin-left:0}}
 .steps li .sn{display:none}.steps li+li::before{content:"→";margin-right:10px;color:var(--mustard);font-weight:700}
+
+/* ---------- 2 November: Our room's theme, help buttons, glossary, the plain list of risks ---------- */
+.rth{color:var(--ice)!important}
+.rtheme{z-index:2}
+.rstage:not(.wide) .rtheme{margin:14px 0 10px}
+.rnewh{gap:8px}
+.rnewh .rtitle{font-size:clamp(22px,1rem + .8vw,28px)}
+.waiting .drvlet{position:relative;display:block;width:76px;height:46px;border-radius:4px;background:var(--dred);box-shadow:0 8px 20px rgba(4,12,24,.3)}
+.waiting .drvlet i{position:absolute;left:10px;height:5px;border-radius:3px;background:#fff}
+.waiting .drvlet i:first-child{top:10px;width:44px}.waiting .drvlet i+i{top:19px;width:28px}
+.waiting .drvlet b{position:absolute;left:10px;top:31px;width:36px;height:5px;border-radius:3px;background:var(--mustard)}
+.vname .vnh{margin:0;color:var(--soft)}
+.mtools{display:flex;gap:10px;align-items:center;margin-left:auto}
+.mtb{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 10px;border-radius:40px;border:1.5px solid rgba(255,255,255,.55);background:rgba(255,255,255,.1);color:var(--ice);font-weight:700;font-size:14px;cursor:pointer;transition:background-color .2s,border-color .2s}
+.mtb svg.i{width:19px;height:19px;stroke-width:2}
+.mtb:hover,.mtb[aria-expanded="true"]{background:rgba(255,255,255,.22);border-color:#fff}
+@media (max-width:620px){.mtb{height:36px;padding:0 10px;font-size:13px}.mtools{margin-left:0}}
+.gloss{position:absolute;z-index:95;right:clamp(12px,2.4vw,36px);width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 40px);overflow:auto;padding:16px 18px 18px;border-radius:14px;
+  background:rgba(22,40,63,.9);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);box-shadow:0 0 0 1px rgba(255,255,255,.16),0 24px 60px rgba(4,12,24,.5);color:var(--ice)}
+.gltop{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.gltop h2{font-family:var(--ff-serif);font-weight:400;font-size:26px;line-height:1}
+.glx{width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(255,255,255,.7);background:transparent;color:var(--ice);display:grid;place-items:center;padding:0;cursor:pointer}
+.glx svg.i{width:15px;height:15px;stroke-width:2.4}
+.glx:hover{background:rgba(255,255,255,.16)}
+.gll{margin:0;display:flex;flex-direction:column}
+.gli{padding:12px 0;border-top:1px solid rgba(255,255,255,.14)}
+.gli dt{display:flex;align-items:center;gap:12px;font-family:var(--ff-serif);font-size:20px;line-height:1.1}
+.gls{flex:none;width:64px;display:grid;place-items:center}
+.gls svg{width:56px;height:auto;display:block}
+.gli dd{margin:6px 0 0 76px;font-size:14.5px;line-height:1.45;color:var(--soft)}
+.gli dd.glsub{display:flex;align-items:center;gap:8px;margin-top:4px}
+.glm{flex:none;width:34px}.glm svg{width:34px;height:34px;display:block}
+/* every risk, as a plain page to read */
+.rdw{padding-block:20px 60px}
+.rdtop{margin-bottom:14px}
+.rdpage{max-width:760px;margin:0 auto;background:#F6F8FB;color:#14243C;border-radius:14px;padding:clamp(22px,4vw,48px);box-shadow:0 18px 44px rgba(4,12,24,.35)}
+.rdpage h1{font-family:var(--ff-serif);font-weight:400;font-size:clamp(34px,1rem + 2.4vw,52px);line-height:1}
+.rdpage h1 b{font-family:var(--ff-sans);font-weight:700;font-size:.86em}
+.rdlede{margin:14px 0 0;font-size:17px;line-height:1.55}
+.rdtoc ol{margin:18px 0 0;padding-left:22px;font-size:16.5px;line-height:1.8}
+.rdtoc a,.rdend a{color:#14243C;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.rdtoc span{color:#5A6676}
+.rdsec{margin-top:40px;padding-top:24px;border-top:2px solid #14243C}
+.rdsec h2{font-family:var(--ff-serif);font-weight:400;font-size:clamp(26px,1rem + 1.2vw,34px);line-height:1.05}
+.rdl{list-style:none;margin:8px 0 0;padding:0}
+.rdl li{padding:18px 0;border-bottom:1px solid #D5DCE6}
+.rdl h3{font-size:19px;line-height:1.3;font-weight:700}
+.rdn{color:#5A6676;margin-right:2px}
+.rdnew{display:inline-block;vertical-align:2px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid #14243C;border-radius:20px;padding:1px 8px}
+.rdalt{margin:6px 0 0;font-size:16px;font-style:italic;color:#3B4650}
+.rdsum{margin:8px 0 0;font-size:17px;line-height:1.55}
+.rdbody{margin-top:8px;font-size:16.5px;line-height:1.6;color:#2B3542}
+.rdbody p+p{margin-top:8px}
+.rdend{margin-top:28px;font-size:16px}
 </style>
 </head>
 <body>
@@ -1313,6 +1367,7 @@ body:not(.editing) .guide .gnotes .gempty{display:none}
   <section class="view" id="v-together" hidden></section>
   <section class="view" id="v-room" hidden></section>
   <section class="view" id="v-vote" hidden></section>
+  <section class="view" id="v-read" hidden></section>
 </main>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Risk in full"></aside>
@@ -1357,7 +1412,7 @@ body:not(.editing) .guide .gnotes .gempty{display:none}
 <script>
 (function(){'use strict';
 var BAKED={
- "at": 1793566343573,
+ "at": 1793661293141,
  "o": {
   "copy.d.words": "In YOUR own words",
   "copy.dr.wi": "NEW DRIVERS members SUBMITTED WHICH WERE SIMILAR:",
@@ -1383,7 +1438,7 @@ var BAKED={
   "copy.tg.icel": "What you said in the iceberg activity",
   "copy.tg.khint": "Click any risk to learn more: what members wrote about the new risks, and how they put the existing risks in their own words.",
   "copy.tg.lhow": "A few notes didn’t fit one of the 27 risks, but are covered below.",
-  "copy.tg.t": "on the<b>&nbsp;horizon<\/b>",
+  "copy.tg.t": "the<b>&nbsp;futures<\/b> we want to see",
   "copy.v.how2": "You will rank your priorities on how, as a House, you would like to devote time to address the 7 drivers and 27 risks.",
   "copy.v.subd2": "Of the pair in front of you, which driver matters most to you? Which one would you like to know more about what actually be done about it?",
   "copy.v.t": "ranking our&nbsp;<b>priorities<\/b>",
@@ -2322,9 +2377,9 @@ VIEW.setup=(function(){
       '<div class="nums" id="s-nums" role="group" aria-label="Room number">'+ROOMS.map(function(r){return '<button type="button" class="num" data-n="'+r.n+'" aria-pressed="false">'+r.n+'</button>';}).join('')+'</div>'+
       '<div class="spick" id="s-pick" aria-live="polite"></div>'+
       C('s.name','And your name?','h3','sq2')+
-      '<input class="field" id="s-name" maxlength="40" autocomplete="name" placeholder="First name and initial" value="'+esc(ME.name)+'">'+
+      '<input class="field" id="s-name" maxlength="60" autocomplete="name" placeholder="Your full name" value="'+esc(ME.name)+'">'+
       '<div><button type="button" class="btn white r" id="s-join" disabled><span id="s-joinl"></span><span class="disc">'+icon('next')+'</span></button></div>'+
-      '<p class="qnote" id="s-note" aria-live="polite"></p></div>'+
+      '<p class="qnote" id="s-note" aria-live="polite">'+C('s.full','Please use your full name: a few of us have similar names.')+'</p></div>'+
       '<div><div id="s-box"></div></div></div></div>';
     mv=Pot($('#s-box'),{rim:true,rooms:true,peek:true,cls:'spot',
       onBall:function(id){var r=ROOM[sel];openRisk(id,{list:r?r.r:AREA[RISKS[id].a].m});}});
@@ -2356,9 +2411,9 @@ VIEW.setup=(function(){
   function join(){
     if(!sel)return; var nm=$('#s-name').value.trim();
     if(!nm){$('#s-name').focus();$('#s-note').innerHTML='<b>'+esc(T('copy.s.need'))+'</b>';return;}
-    ME.name=nm.slice(0,40); ME.room=sel; saveMe(); go('room');
+    ME.name=nm.slice(0,60); ME.room=sel; saveMe(); go('room');
   }
-  BASE['copy.s.need']='Type your first name and initial, then join.'; BASE['copy.s.in']='You’re in room';
+  BASE['copy.s.need']='Type your full name, then join.'; BASE['copy.s.in']='You’re in room';
   return {show:function(sub){if(!built)build();mv.draw();paintIn();var n=+sub||ME.room;if(n&&ROOM[n])choose(n);else choose(0);}};
 })();
 
@@ -2382,6 +2437,7 @@ VIEW.room=(function(){
       '<div class="rnav" id="r-nav"><button type="button" class="arrowb prev" id="r-prev" aria-label="Previous risk">'+icon('prev')+'</button>'+
       '<div class="sdots" id="r-dots">'+order.map(function(id,i){return '<button type="button" class="'+(isNew(id)?'new':'')+'" style="--c:'+rcol(id)+'" data-i="'+i+'" aria-label="'+esc(T('risk.'+id+'.mt'))+'">'+(i+1)+'</button>';}).join('')+'</div>'+
       '<button type="button" class="arrowb" id="r-next" aria-label="Next risk">'+icon('next')+'</button></div>'+
+      '<div class="rtheme" id="r-theme">'+F('area.'+r.a+'.n','p','spa rth')+'</div>'+
       '<aside class="rpanel panel" id="r-panel" aria-live="polite"></aside></div>';
     $('#r-back').onclick=function(){go('setup');};
     $('#r-prev').onclick=function(){step(-1);}; $('#r-next').onclick=function(){step(1);};
@@ -2404,7 +2460,11 @@ VIEW.room=(function(){
     var st=$('#r-stage'); if(!st)return; var W=st.clientWidth, wide=W>=980, rqh=$('.rq',el).offsetHeight;
     var H=wide?clamp(window.innerHeight-50-rqh-90,460,760):clamp(W*1.08,360,560), PW=wide?W*.58:W;
     st.classList.toggle('wide',wide); var bx=$('#r-pot'); bx.style.width=PW+'px'; bx.style.height=H+'px';
-    var p=$('#r-panel'); if(wide){p.style.cssText='position:absolute;left:'+(PW+16)+'px;top:0;width:'+(W-PW-16)+'px;max-height:'+(H+70)+'px';}else p.style.cssText='';
+    var p=$('#r-panel'), th=$('#r-theme');
+    /* the room's theme sits at the top of the right-hand column, the panel under it */
+    if(wide){th.style.cssText='position:absolute;left:'+(PW+16)+'px;top:0;width:'+(W-PW-16)+'px';var tH=th.offsetHeight+14;
+      p.style.cssText='position:absolute;left:'+(PW+16)+'px;top:'+tH+'px;width:'+(W-PW-16)+'px;max-height:'+(H+70-tH)+'px';}
+    else{th.style.cssText='';p.style.cssText='';}
     var D=Math.min(PW*.6,H*.66,500), k=order.length-1;
     SZ={big:D/2,lit:clamp(Math.min(D*.2,(H-D)/2-4),40,60),dim:wide?24:15};
   }
@@ -2421,6 +2481,7 @@ VIEW.room=(function(){
   function panel(anim){
     var id=order[idx], r=RISKS[id], p='risk.'+id+'.', box=$('#r-panel');
     function fill(){box.innerHTML='<div class="rhead">'+grpChip(id)+'<span class="code">'+(idx+1)+' / '+order.length+'</span></div>'+
+      (isNew(id)?'<header class="rsec rnewh">'+F(p+'mt','h2','rtitle')+F(sumK(id),'p','rsum')+'</header>':'')+
       (descK(id)?F(descK(id),'div','ebody'):'')+
       '<section class="rsec"><h3>'+C('d.yours','In your own words')+'</h3>'+quoteList(rq(id))+'</section>';box.scrollTop=0;}
     if(anim&&!reduce){box.classList.add('out');setTimeout(function(){fill();box.classList.remove('out');},200);}else fill();
@@ -2972,16 +3033,16 @@ VIEW.vote=(function(){
   /* someone sent straight here: their room and name, in one line */
   function nameForm(){return '<div class="vcard vname"><span class="disc">'+icon('heart')+'</span>'+C('v.nq2','First, your room and name','h4')+
     '<form class="addrow vnf"><select class="vnr" aria-label="Room number"><option value="">'+esc(T('copy.v.nroom'))+'</option>'+ROOMS.map(function(r){return '<option value="'+r.n+'"'+(ME.room===r.n?' selected':'')+'>'+esc(T('copy.v.nroomn'))+' '+r.n+'</option>';}).join('')+'</select>'+
-    '<input class="vnin" maxlength="40" autocomplete="name" placeholder="First name and initial" value="'+esc(ME.name||'')+'"><button class="btn primary" type="submit">'+icon('check')+C('v.ngo','That’s me')+'</button></form><p class="qnote vnn" aria-live="polite"></p></div>';}
+    '<input class="vnin" maxlength="60" autocomplete="name" placeholder="Your full name" value="'+esc(ME.name||'')+'"><button class="btn primary" type="submit">'+icon('check')+C('v.ngo','That’s me')+'</button></form><p class="qnote vnh">'+C('v.nfull','Please use your full name: a few of us have similar names.')+'</p><p class="qnote vnn" aria-live="polite"></p></div>';}
   BASE['copy.v.nroom']='Room'; BASE['copy.v.nroomn']='Room';
   el.addEventListener('submit',function(e){var f=e.target.closest('.vnf');if(!f)return;e.preventDefault();var n=$('.vnin',f).value.trim(),r=+$('.vnr',f).value;
     if(!r||!n){$('.vnn',f.parentNode).textContent=!r?'Choose your room number.':'Type your first name and initial.';(!r?$('.vnr',f):$('.vnin',f)).focus();return;}
-    ME.name=n.slice(0,40);ME.room=r;saveMe();renderAll();});
-  function wait(h,p){return '<div class="waiting"><span class="sunlet" aria-hidden="true"></span>'+h+p+'</div>';}
+    ME.name=n.slice(0,60);ME.room=r;saveMe();renderAll();});
+  function wait(h,p,drv){return '<div class="waiting">'+(drv?'<span class="drvlet" aria-hidden="true"><i></i><i></i><b></b></span>':'<span class="sunlet" aria-hidden="true"></span>')+h+p+'</div>';}
   function renderVote(){
     var v=$('#vv-drivers'),ph=phaseNow(),set=SETS[S.cfg.set],h='';
-    if(ph==='idle')h=wait(C('v.w1','Waiting for the host','h3'),'<p>'+C('v.w1s','Voting will open here when the host starts the timer. Comparing now:')+' <b>'+esc(set.n.toLowerCase())+'</b>.</p>');
-    else if(ph==='closed')h=wait(C('v.w2','Voting has closed','h3'),'<p>'+C('v.w2s','Thank you. The host will share the results.')+' ('+S.myVotes+')</p>');
+    if(ph==='idle'||ph==='closed')h=wait(C('v.w0','Voting isn’t open','h3'),'',1);
+
     else if(needName())h=nameForm();
     else{
       if(!S.pair)nextPair();
@@ -3102,7 +3163,7 @@ VIEW.vote=(function(){
       '<p class="vsub">'+C('v.psub','Pick the ones that matter most to you, and where you’d most like to find out what could be done about them.')+'</p>'+
       '<ol class="steps"><li>'+C('v.p1','Click a circle on the map to read the risk.')+'</li><li>'+C('v.p2','Press “Pick this risk”.')+'</li><li>'+C('v.p3','When you have five, press “Submit my picks”.')+'</li></ol>';
     if(open&&needName())h+=nameForm();
-    if(!open)h+='<p class="banner" style="display:inline-block;margin-top:14px">'+(S.cfg.pickPhase!=='open'&&S.cfg.pickPhase!=='closed'?C('v.pn','Not open yet. Explore the map; picking opens when the host starts it.'):C('v.pc','Picking has closed. Thank you.'))+'</p>';
+    if(!open)h+='<p class="banner" style="display:inline-block;margin-top:14px">'+(S.cfg.pickPhase!=='open'&&S.cfg.pickPhase!=='closed'?C('v.pn','Not open yet. Explore the map; picking opens when the host starts it.'):C('v.pc2','Picking isn’t open.'))+'</p>';
     $('#pk-head').innerHTML=h;
     var pk={};myPick.forEach(function(id,i){pk[id]=i+1;});mv.setPicked(pk);
     var dots='';for(var d=0;d<PICKMAX;d++)dots+='<i class="'+(d<myPick.length?'on':'')+'">'+(d<myPick.length?d+1:'')+'</i>';
@@ -3172,6 +3233,65 @@ VIEW.vote=(function(){
   return {show:function(sub){setTab(['pick','vote','about','drivers','risks','results','host'].indexOf(sub)>=0?sub:tab);},sub:function(){return tab;},connect:connect,onRisk:function(id){if(mv)mv.setHl(id);}};
 })();
 
+
+/* ============================================================
+   Help for anyone lost: a glossary of the page's symbols, and every risk in plain text.
+   Both open from the two buttons at the top right of the masthead.
+   ============================================================ */
+IC.book='<path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5C4.7 20 4 19.3 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5z"/>';
+IC.doc='<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 15.5h6M9 19h4"/>';
+var GSV={
+  sun:'<svg viewBox="0 0 64 34" aria-hidden="true"><path d="M2 32a30 30 0 0 1 60 0z" fill="#E06050"/><path d="M6 32a26 26 0 0 1 52 0z" fill="#E08850"/><path d="M10 32a22 22 0 0 1 44 0z" fill="#E0C060"/><path d="M14 32a18 18 0 0 1 36 0z" fill="#F0E060"/><path d="M0 32.5h64" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/></svg>',
+  drv:'<svg viewBox="0 0 64 40" aria-hidden="true"><rect x="2" y="2" width="60" height="36" rx="3" fill="#C0184F"/><rect x="9" y="9" width="36" height="4" rx="2" fill="#fff"/><rect x="9" y="16" width="24" height="4" rx="2" fill="#fff"/><rect x="9" y="27" width="30" height="4" rx="2" fill="#E0C060"/></svg>',
+  hub:'<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="#E078B0"/></svg>',
+  full:'<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M2 20h14" stroke="#E078B0" stroke-width="2"/><circle cx="25" cy="20" r="9" fill="#E078B0"/></svg>',
+  ring:'<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M2 20h14" stroke="#E078B0" stroke-width="2"/><circle cx="25" cy="20" r="8" fill="#2A2F55" stroke="#E078B0" stroke-width="2.5"/></svg>',
+  theme:'<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/>'+
+    [[24,18,'#B868C0'],[31,15,'#BDE6F6'],[28,23,'#B868C0'],[40,22,'#F0E060'],[46,27,'#E08850'],[42,30,'#F0E060'],[19,30,'#E06050'],[17,37,'#F0E060'],[23,36,'#E06050'],[27,44,'#E08850'],[33,48,'#B868C0'],[30,41,'#E08850'],[41,42,'#E078B0'],[47,40,'#B868C0'],[43,48,'#E078B0']].map(function(d){return '<circle cx="'+d[0]+'" cy="'+d[1]+'" r="3.6" fill="'+d[2]+'"/>';}).join('')+'</svg>'
+};
+var HELP=(function(){
+  var mw=$('.mast .wrap');
+  mw.insertAdjacentHTML('beforeend','<div class="mtools"><button type="button" class="mtb" id="m-gl" aria-expanded="false" aria-controls="gloss">'+icon('book')+'<span>'+C('gl.b','Glossary')+'</span></button>'+
+    '<button type="button" class="mtb" id="m-rd">'+icon('doc')+'<span>'+C('rd.b','All 27 risks')+'</span></button></div>');
+  document.body.insertAdjacentHTML('beforeend','<div class="gloss" id="gloss" role="dialog" aria-modal="false" aria-labelledby="gl-t" hidden><div class="gltop"><h2 id="gl-t">'+C('gl.t','Glossary')+'</h2>'+
+    '<button type="button" class="glx" aria-label="Close">'+icon('close')+'</button></div><dl class="gll">'+
+    '<div class="gli"><dt><span class="gls">'+GSV.sun+'</span>'+C('gl.f','Common futures','span')+'</dt><dd>'+C('gl.fs','The positive futures we imagined in the iceberg exercise.')+'</dd></div>'+
+    '<div class="gli"><dt><span class="gls">'+GSV.drv+'</span>'+C('gl.d','Drivers','span')+'</dt><dd>'+C('gl.ds','The reasons behind the risks. We connected each driver to the risks it helps to cause.')+'</dd></div>'+
+    '<div class="gli"><dt><span class="gls">'+GSV.hub+'</span>'+C('gl.h','The risk map clusters','span')+'</dt><dd>'+C('gl.hs','Each large circle is who or what the risks around it concern.')+'</dd>'+
+      '<dd class="glsub"><span class="glm">'+GSV.full+'</span><span>'+C('gl.r','A risk from the horizon scan with AI safety experts.')+'</span></dd>'+
+      '<dd class="glsub"><span class="glm">'+GSV.ring+'</span><span>'+C('gl.n','A new risk added by the House. Its short description comes from the weekend activities.')+'</span></dd></div>'+
+    '<div class="gli"><dt><span class="gls">'+GSV.theme+'</span>'+C('gl.th','Themes','span')+'</dt><dd>'+C('gl.ths','How we’ve grouped the 27 risks for Session 8, to set our priorities.')+'</dd></div>'+
+    '</dl></div>');
+  var g=$('#gloss'), b=$('#m-gl');
+  function open(on){g.hidden=!on;b.setAttribute('aria-expanded',String(on));if(on){var r=b.getBoundingClientRect();g.style.top=(r.bottom+window.scrollY+10)+'px';try{$('.glx',g).focus({preventScroll:true});}catch(e){}}}
+  b.addEventListener('click',function(e){if(e.target.isContentEditable)return;open(g.hidden);});
+  $('.glx',g).addEventListener('click',function(){open(false);b.focus();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!g.hidden){open(false);b.focus();}});
+  document.addEventListener('click',function(e){if(!g.hidden&&!e.target.closest('#gloss,#m-gl'))open(false);});
+  var FROM='setup';
+  $('#m-rd').addEventListener('click',function(e){if(e.target.isContentEditable)return;open(false);if(CUR!=='read')FROM=CUR||'setup';go('read');});
+  return {from:function(){return FROM;}};
+})();
+VIEW.read=(function(){
+  var el=$('#v-read'), built=false;
+  function build(){var n=0;
+    el.innerHTML='<div class="wrap rdw"><div class="rdtop"><button type="button" class="btn ghost sm" id="rd-back">'+icon('prev')+C('rd.back','Back')+'</button></div>'+
+      '<article class="rdpage" aria-labelledby="rd-t"><h1 id="rd-t">'+C('rd.t','All 27 <b>risks</b>','span','',1)+'</h1>'+
+
+      '<nav class="rdtoc" aria-label="Themes"><ol>'+AREAS.map(function(a){return '<li><a href="#rd-'+a.k+'">'+F('area.'+a.k+'.n')+'</a> <span>('+a.m.length+')</span></li>';}).join('')+'</ol></nav>'+
+      AREAS.map(function(a){return '<section class="rdsec" id="rd-'+a.k+'" aria-labelledby="rdh-'+a.k+'"><h2 id="rdh-'+a.k+'">'+F('area.'+a.k+'.n')+'</h2><ol class="rdl">'+
+        a.m.map(function(id){n++;var p='risk.'+id+'.',R=RISKS[id],nw=isNew(id);
+          return '<li value="'+n+'"><h3><span class="rdn">'+n+'.</span> '+F(p+'mt')+(nw?' <span class="rdnew">New</span>':'')+'</h3>'+
+            (!nw&&T(p+'t')&&T(p+'t')!==T(p+'mt')?'<p class="rdalt">'+esc(T('copy.rd.alt'))+' '+F(p+'t')+'</p>':'')+
+            F(sumK(id),'p','rdsum')+(descK(id)&&T(descK(id))?F(descK(id),'div','rdbody'):'')+'</li>';}).join('')+'</ol></section>';}).join('')+
+      '<p class="rdend"><a href="#rd-t">'+C('rd.top','Back to the top')+'</a></p></article></div>';
+    $('#rd-back').addEventListener('click',function(e){if(e.target.isContentEditable)return;go(HELP.from());});
+    el.addEventListener('click',function(e){var a=e.target.closest('a[href^="#rd-"]');if(!a||e.target.isContentEditable)return;e.preventDefault();var t=document.getElementById(a.getAttribute('href').slice(1));
+      if(t){window.scrollTo({top:t.getBoundingClientRect().top+window.scrollY-$('#tabs').offsetHeight-12,behavior:reduce?'auto':'smooth'});}});
+    built=true;}
+  BASE['copy.rd.alt']='In members’ words:';
+  return {show:function(){if(!built)build();},sub:function(){return '';}};
+})();
 /* ============================================================
    Boot
    ============================================================ */
