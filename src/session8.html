@@ -2286,7 +2286,9 @@ function go(k,sub,push){
   try{history.replaceState(null,'',h);}catch(e){}
   if(first&&k!=='room'){window.scrollTo(0,0);var t=$('#tabs [aria-selected="true"]');if(t)t=t.closest('.tabgrp')||t;if(t&&t.scrollIntoView)t.scrollIntoView({block:'nearest',inline:'nearest'});}
 }
-function fromHash(){var h=(location.hash||'').slice(1),i=h.indexOf('-');go(i<0?(h||'setup'):h.slice(0,i),i<0?'':h.slice(i+1));}
+/* each part of Recap has its own link: #newmap (or #together-newmap) opens Recap at the new risk map */
+var RECAP={futures:1,drivers:1,newmap:1,grouped:1,also:1};
+function fromHash(){var h=(location.hash||'').slice(1),i=h.indexOf('-');if(RECAP[h]){go('together',h);return;}go(i<0?(h||'setup'):h.slice(0,i),i<0?'':h.slice(i+1));}
 
 /* ---------- the risk drawer: one full entry, wherever a risk is clicked ---------- */
 var DRAWER={id:null,list:null,pick:null};
@@ -2839,12 +2841,12 @@ VIEW.together=(function(){
     var d=$('.tgd',el).getBoundingClientRect(), run=$('#tg-run'), rr=run.getBoundingClientRect(), H=$('#tg-stage').clientHeight, p=(tabs-rr.top)/Math.max(1,run.offsetHeight-H);
     if(d.top<line)k='drivers'; if(rr.top<line)k='newmap'; if(p>.8)k='grouped'; if($('#tg-less').getBoundingClientRect().top<line+window.innerHeight*.25)k='also'; nav.classList.toggle('mini',k==='also');
     $$('[data-go]',nav).forEach(function(b){b.setAttribute('aria-current',String(b.dataset.go===k));});}
-  function navGo(k){var tabs=$('#tabs').offsetHeight,y;
+  function navGo(k,now){var tabs=$('#tabs').offsetHeight,y;
     if(k==='futures')y=$('#tg-map').getBoundingClientRect().top+window.scrollY-tabs;
     else if(k==='drivers')y=$('.tgd',el).getBoundingClientRect().top+window.scrollY-tabs+2;
     else if(k==='also')y=$('#tg-less').getBoundingClientRect().top+window.scrollY-tabs+2;
     else{var run=$('#tg-run'),top=run.getBoundingClientRect().top+window.scrollY-tabs+2;y=k==='newmap'?top:top+run.offsetHeight-$('#tg-stage').clientHeight;}
-    closeCard();window.scrollTo({top:y,behavior:reduce?'auto':'smooth'});}
+    closeCard();window.scrollTo({top:y,behavior:(reduce||now)?'auto':'smooth'});}
   el.addEventListener('click',function(e){var b=e.target.closest('#tg-nav [data-go]');if(b&&!e.target.isContentEditable)navGo(b.dataset.go);});
   window.addEventListener('scroll',navWhere,{passive:true});
   function onScroll(){if(!raf)raf=requestAnimationFrame(scrub);}
@@ -2853,8 +2855,7 @@ VIEW.together=(function(){
   /* from a risk's panel elsewhere: show this future, or this driver, here */
   function goFuture(id){if(!built)build();stop();showA(id);var m=$('#tg-map');window.scrollTo({top:m.getBoundingClientRect().top+window.scrollY-$('#tabs').offsetHeight,behavior:'auto'});}
   function goDriver(d){if(!built)build();pick(d,true);var c=$('#tg-row [data-d="'+d+'"]');if(c)window.scrollTo({top:c.getBoundingClientRect().top+window.scrollY-$('#tabs').offsetHeight-120,behavior:'auto'});}
-  return {jump:function(sub){var t=sub==='newmap'?$('#tg-run'):sub==='drivers'?$('.tgd',el):null;if(!t)return;
-      setTimeout(function(){window.scrollTo({top:t.getBoundingClientRect().top+window.scrollY-$('#tabs').offsetHeight+2,behavior:'auto'});},350);},
+  return {jump:function(sub){if(!RECAP[sub])return;setTimeout(function(){navGo(sub,true);navWhere();},350);},
     showA:function(id){setTimeout(function(){goFuture(id);},80);},driver:function(d){setTimeout(function(){goDriver(d);},120);},show:function(sub){if(!built)build();hz.layout();setTimeout(navWhere,400);if(sub)this.jump(sub);showA(FUT[ai].id,true);hz.setLit(drv?litFor(drv):lit());setTimeout(lines,50);
     setTimeout(function(){measure();live=false;pot.el.classList.add('scrub');scrub();},60);}};
 })();
